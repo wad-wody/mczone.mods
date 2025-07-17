@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mods Upload</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    .add-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 20px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      max-width: 400px;
+      z-index: 9999;
+    }
+    .mod-list {
+      margin-top: 100px;
+    }
+    .mod {
+      background: white;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #aaa;
+    }
+    input, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- زر الإضافة -->
+<button class="add-btn" onclick="openModal()">+</button>
+
+<!-- النافذة المنبثقة لإضافة مود -->
+<div class="modal" id="modal">
+  <form id="modForm">
+    <input type="text" name="modName" placeholder="اسم المود" required>
+    
+    <label>صورة المود:</label>
+    <input type="file" name="mainImage" accept="image/*" required>
+
+    <label>رابط التحميل (MCAddon أو MCPack فقط):</label>
+    <input type="url" name="downloadLink" required>
+
+    <label>صور من داخل المود (يمكنك اختيار أكثر من صورة):</label>
+    <input type="file" name="modImages" accept="image/*" multiple>
+
+    <label>الوصف:</label>
+    <textarea name="description" rows="3" required></textarea>
+
+    <label>رابط التريلر (اختياري):</label>
+    <input type="url" name="trailer">
+
+    <input type="email" name="email" placeholder="بريدك الإلكتروني" required style="display:none;" value="modsubmit@yourmail.com">
+
+    <button type="submit">إرسال</button>
+  </form>
+</div>
+
+<!-- عرض المودات -->
+<div class="mod-list" id="modList">
+  <!-- المودات التي تم رفعها ستظهر هنا -->
+</div>
+
+<script>
+  // فتح النافذة
+  function openModal() {
+    document.getElementById("modal").style.display = "block";
+  }
+
+  // إرسال النموذج وحفظ المود في localStorage
+  document.getElementById("modForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const modName = formData.get("modName");
+    const downloadLink = formData.get("downloadLink");
+    const description = formData.get("description");
+    const trailer = formData.get("trailer");
+
+    // تحقق من الرابط
+    if (!downloadLink.endsWith(".mcaddon") && !downloadLink.endsWith(".mcpack")) {
+      alert("يجب أن يكون رابط التحميل .mcaddon أو .mcpack");
+      return;
+    }
+
+    const mod = {
+      modName,
+      downloadLink,
+      description,
+      trailer
+    };
+
+    let mods = JSON.parse(localStorage.getItem("mods") || "[]");
+    mods.push(mod);
+    localStorage.setItem("mods", JSON.stringify(mods));
+    e.target.submit(); // إرسال عبر Formspree
+  });
+
+  // عرض المودات
+  function loadMods() {
+    let mods = JSON.parse(localStorage.getItem("mods") || "[]");
+    let list = document.getElementById("modList");
+    list.innerHTML = "";
+    mods.forEach(mod => {
+      const el = document.createElement("div");
+      el.className = "mod";
+      el.innerHTML = `
+        <h3>${mod.modName}</h3>
+        <p>${mod.description}</p>
+        <a href="${mod.downloadLink}" target="_blank">تحميل المود</a>
+        ${mod.trailer ? `<br><a href="${mod.trailer}" target="_blank">مشاهدة التريلر</a>` : ""}
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  loadMods();
+</script>
+
+</body>
+</html>
